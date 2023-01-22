@@ -7,28 +7,28 @@
 import { LinkingOptions } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 
-import { RootStackParamList } from '../types';
+import { RootDrawerParamList } from '../types';
 
-const linking: LinkingOptions<RootStackParamList> = {
+const linking: LinkingOptions<RootDrawerParamList> = {
   prefixes: [Linking.createURL('/')],
   config: {
     screens: {
-      Root: {
+      Home: {
         screens: {
-          TabOne: {
+          Game: {
             screens: {
-              TabOneScreen: 'one',
+              GameScreen: 'one-game',
             },
           },
-          TabTwo: {
+          Rating: {
             screens: {
-              TabTwoScreen: 'two',
+              RatingScreen: 'two-rating',
             },
           },
         },
       },
-      Modal: 'modal',
-      NotFound: '*',
+      // Modal: 'modal',
+      // NotFound: '*',
     },
   },
 };

@@ -3,14 +3,15 @@ module.exports = function (api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
+      'react-native-reanimated/plugin',
       [
-       'babel-plugin-root-import',
-       {
-         root: __dirname,
-         rootPathPrefix: '~',
-         rootPathSuffix: './src',
-       },
-      ]
-    ]
+        'babel-plugin-root-import',
+        {
+          root: __dirname,
+          rootPathPrefix: '~',
+          rootPathSuffix: './src',
+        },
+      ],
+    ],
   };
 };

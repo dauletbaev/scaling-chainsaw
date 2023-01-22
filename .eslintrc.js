@@ -10,6 +10,14 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   overrides: [],
+  ignorePatterns: [
+    '**/*.js',
+    '**/*.d.ts',
+    '**/*.spec.ts',
+    '**/*.spec.tsx',
+    '**/*.test.ts',
+    '**/*.test.tsx',
+  ],
   parserOptions: {
     ecmaFeatures: {
       jsx: true,
@@ -18,8 +26,15 @@ module.exports = {
     sourceType: 'module',
     project: './tsconfig.json',
   },
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
   plugins: ['react', '@typescript-eslint', 'prettier'],
   rules: {
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    'react/no-unescaped-entities': 'off',
   },
 };

@@ -3,5 +3,6 @@
   "compilerOptions": {
     "strict": true,
     "rootDir": "./"
-  }
+  },
+  "include": [".eslintrc.js", "babel.config.js", "src/**/*"]
 }

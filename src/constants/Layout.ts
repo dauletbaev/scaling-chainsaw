@@ -1,4 +1,4 @@
-import { Dimensions } from 'react-native';
+import { Appearance, ColorSchemeName, Dimensions } from 'react-native';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -9,4 +9,6 @@ export default {
     height,
   },
   isSmallDevice: width < 375,
+  isLargeDevice: width >= 768,
+  colorScheme: Appearance.getColorScheme() as NonNullable<ColorSchemeName>,
 };
