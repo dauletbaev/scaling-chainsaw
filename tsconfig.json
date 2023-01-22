@@ -4,5 +4,5 @@
     "strict": true,
     "rootDir": "./"
   },
-  "include": [".eslintrc.js", "babel.config.js", "src/**/*"]
+  "include": ["App.tsx", ".eslintrc.js", "babel.config.js", "src/**/*"]
 }
