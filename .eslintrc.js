@@ -36,5 +36,6 @@ module.exports = {
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
     '@typescript-eslint/explicit-function-return-type': 'off',
     'react/no-unescaped-entities': 'off',
+    '@typescript-eslint/no-unused-vars': [1, { argsIgnorePattern: '^_' }],
   },
 };
