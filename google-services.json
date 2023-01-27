@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "825240899035",
+    "project_id": "sozle-549a1",
+    "storage_bucket": "sozle-549a1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:825240899035:android:d3a6a9ea695679ccc6ebfe",
+        "android_client_info": {
+          "package_name": "org.qaraqalpaq.sozle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "825240899035-vic15m9sojebidki6biq2hp062ljnsnd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDr7U_K2agrzLJEqSRkmd7vn06zXPKpTp0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "825240899035-3hdglj8h8c79rgkeg32q5oes5itg6sbp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,24 +4,42 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import DrawerTopAvatar from './Avatar';
 import { Text } from '../Themed';
+import { useAuth } from '../../store/authContext';
+import { getRandomSeed } from '../../lib/seed';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const generatedSeed = getRandomSeed();
+let avatarUrl =
+  'https://api.dicebear.com/5.x/adventurer-neutral/png?scale=80&radius=50&size=256';
 
 function DrawerTop() {
+  const { user } = useAuth();
   const navigation = useNavigation();
 
   function onPress() {
     navigation.navigate('Profile');
   }
 
+  React.useEffect(() => {
+    AsyncStorage.getItem('seed')
+      .then(seed => {
+        if (seed != null) {
+          avatarUrl += '&seed=' + seed;
+        } else {
+          AsyncStorage.setItem('seed', generatedSeed).catch(() => {});
+          avatarUrl += '&seed=' + generatedSeed;
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <Pressable
       style={({ pressed }) => [styles.container, pressed && styles.pressed]}
       onPress={onPress}
     >
-      <DrawerTopAvatar
-        size={100}
-        imageUrl="https://api.dicebear.com/5.x/adventurer-neutral/png?scale=80&radius=50&size=256"
-      />
-      <Text style={styles.username}>Username</Text>
+      <DrawerTopAvatar size={100} imageUrl={avatarUrl} />
+      <Text style={styles.username}>{user?.name ?? 'Miyman'}</Text>
     </Pressable>
   );
 }

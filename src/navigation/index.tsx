@@ -7,7 +7,7 @@ import {
   DrawerItemList,
 } from '@react-navigation/drawer';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { ColorSchemeName, StyleProp, ViewStyle } from 'react-native';
+import { ColorSchemeName, StyleProp, View, ViewStyle } from 'react-native';
 
 import { RootDrawerParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import Colors from '../constants/Colors';
@@ -20,6 +20,7 @@ import TabBarIcon from './TabBarIcon';
 import Layout from '../constants/Layout';
 import DrawerTop from '../components/DrawerTop';
 import ProfileScreen from '../screens/Profile';
+import DrawerBottom from '../components/DrawerBottom';
 
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 const Drawer = createDrawerNavigator<RootDrawerParamList>();
@@ -58,9 +59,18 @@ function BottomTabNavigator() {
 
 function CustomDrawerContent(props: DrawerContentComponentProps) {
   return (
-    <DrawerContentScrollView {...props}>
-      <DrawerTop />
-      <DrawerItemList {...props} />
+    <DrawerContentScrollView
+      {...props}
+      contentContainerStyle={{
+        flex: 1,
+        justifyContent: 'space-between',
+      }}
+    >
+      <View>
+        <DrawerTop />
+        <DrawerItemList {...props} />
+      </View>
+      <DrawerBottom />
     </DrawerContentScrollView>
   );
 }
