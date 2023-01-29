@@ -42,8 +42,8 @@ const styles = StyleSheet.create({
   guessSquare: {
     borderColor: '#d3d6da',
     borderWidth: 2,
-    width: Math.floor(Layout.window.width / 7.68),
-    height: Math.floor(Layout.window.height / 16.07),
+    width: Math.floor(Layout.window.width / 7.68) - 5,
+    height: Math.floor(Layout.window.height / 16.07) - 5,
     alignItems: 'center',
     justifyContent: 'center',
     margin: 5,

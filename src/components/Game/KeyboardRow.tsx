@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 
+import Layout from '../../constants/Layout';
 import { getCapitalizedLetter } from '../../lib/game';
 import { Text, View } from '../Themed';
 
@@ -40,21 +41,22 @@ const styles = StyleSheet.create({
   keyboardRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: Layout.isSmallDevice ? 5 : 10,
   },
   key: {
     backgroundColor: '#d3d6da',
-    padding: 10,
+    paddingVertical: Layout.isSmallDevice ? 7 : 10,
+    paddingHorizontal: 10,
     margin: 3,
     borderRadius: 5,
   },
   keyWithIcon: {
     marginHorizontal: 0,
-    paddingHorizontal: 20,
+    paddingHorizontal: Layout.isSmallDevice ? 10 : 20,
     alignItems: 'center',
   },
   keyLetter: {
     fontWeight: '500',
-    fontSize: 15,
+    fontSize: Layout.isSmallDevice ? 12 : 15,
   },
 });
