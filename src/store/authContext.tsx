@@ -62,6 +62,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         // some other error happened
       }
+
+      throw new Error(error.code);
     }
   }, []);
 

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View as NativeView, Alert } from 'react-native';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { statusCodes } from '@react-native-google-signin/google-signin';
 
 import { Text, View } from '../Themed';
 import { useAuth } from '../../store/authContext';
@@ -25,13 +26,23 @@ function DrawerBottom() {
   };
 
   const signIn = () => {
-    navigation.dispatch(DrawerActions.closeDrawer());
     setIsSigninInProgress(true);
 
-    authCtx.signIn().finally(() => {
-      setIsSigninInProgress(false);
-      Alert.alert('Kiriw', 'Kiriwge muvaffaqııtlı ǵana kirip kere');
-    });
+    authCtx
+      .signIn()
+      // Success
+      .then(() => {
+        Alert.alert('Kiriw', 'Kiriwge muvaffaqııtlı ǵana kirip kere');
+      })
+      .catch(error => {
+        if (error.message !== statusCodes.SIGN_IN_CANCELLED) {
+          Alert.alert('Kiriw', 'Kiriwge muvaffaqııtsız ǵana kirip kere');
+        }
+      })
+      .finally(() => {
+        setIsSigninInProgress(false);
+        navigation.dispatch(DrawerActions.closeDrawer());
+      });
   };
 
   return (
