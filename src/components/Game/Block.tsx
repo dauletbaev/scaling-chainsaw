@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { StyleSheet } from 'react-native';
+import Layout from '../../constants/Layout';
 
 import { Text, View } from '../Themed';
 
@@ -41,8 +42,8 @@ const styles = StyleSheet.create({
   guessSquare: {
     borderColor: '#d3d6da',
     borderWidth: 2,
-    width: 50,
-    height: 50,
+    width: Math.floor(Layout.window.width / 7.68),
+    height: Math.floor(Layout.window.height / 16.07),
     alignItems: 'center',
     justifyContent: 'center',
     margin: 5,
