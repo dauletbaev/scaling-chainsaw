@@ -17,7 +17,7 @@ function DrawerTop() {
   const navigation = useNavigation();
 
   function onPress() {
-    navigation.navigate('Profile');
+    navigation.navigate('Profile', { userId: user?.id });
   }
 
   React.useEffect(() => {

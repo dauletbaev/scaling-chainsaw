@@ -20,7 +20,9 @@ declare global {
 
 export interface RootDrawerParamList extends ParamListBase {
   Home: NavigatorScreenParams<RootTabParamList> | undefined;
-  Profile: undefined;
+  Profile: {
+    userId: string | undefined;
+  };
   Settings: undefined;
 }
 
