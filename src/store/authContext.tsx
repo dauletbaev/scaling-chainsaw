@@ -6,6 +6,8 @@ import {
 } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth, { type FirebaseAuthTypes } from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import crashlytics from '@react-native-firebase/crashlytics';
 
 GoogleSignin.configure({
   webClientId: '825240899035-vic15m9sojebidki6biq2hp062ljnsnd.apps.googleusercontent.com',
@@ -50,6 +52,73 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await AsyncStorage.setItem('idToken', userInfo.idToken);
       }
 
+      const document = await firestore().collection('users').doc(userInfo.user.id).get();
+
+      if (document.exists) {
+        void document.ref
+          .update({
+            last_login: firestore.FieldValue.serverTimestamp(),
+            updated_at: firestore.FieldValue.serverTimestamp(),
+          })
+          .then(() => {
+            crashlytics().log(
+              `Sign in back: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`,
+            );
+            crashlytics().log(
+              `User updated: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`,
+            );
+          })
+          .catch(error => {
+            crashlytics().recordError(
+              new Error(
+                `Error on sign in back: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`,
+              ),
+            );
+            crashlytics().recordError(error);
+          });
+      } else {
+        void document.ref
+          .set(
+            {
+              familyName: userInfo.user.familyName,
+              givenName: userInfo.user.givenName,
+              name: userInfo.user.name,
+              avatar: '',
+              email: userInfo.user.email,
+              total_score: 0,
+              monthly_score: 0,
+              fcm_tokens: firestore.FieldValue.arrayUnion('ABCDE123456'),
+              last_login: firestore.FieldValue.serverTimestamp(),
+              created_at: firestore.FieldValue.serverTimestamp(),
+              updated_at: firestore.FieldValue.serverTimestamp(),
+            },
+            {
+              merge: true,
+            },
+          )
+          .then(() => {
+            crashlytics().log(
+              `User added: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`,
+            );
+            void Promise.all([
+              crashlytics().setUserId(userInfo.user.id),
+              crashlytics().setAttributes({
+                email: userInfo.user.email,
+                name: userInfo.user.name ?? 'NO_NAME',
+              }),
+            ]);
+          })
+          .catch(error => {
+            crashlytics().recordError(error);
+          });
+      }
+
+      let logMsg = `User signed in: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`;
+      if (document.exists) {
+        logMsg += ' - Returning user';
+      }
+      crashlytics().log(logMsg);
+
       const googleCredential = auth.GoogleAuthProvider.credential(userInfo.idToken);
       return await auth().signInWithCredential(googleCredential);
     } catch (error: any) {
@@ -62,6 +131,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         // some other error happened
       }
+
+      crashlytics().recordError(error);
 
       throw new Error(error.code);
     }
@@ -77,8 +148,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await AsyncStorage.removeItem('user');
       await AsyncStorage.removeItem('idToken');
       await auth().signOut();
-    } catch (error) {
-      console.error(error);
+
+      crashlytics().log(`User signed out: ${user?.id} - ${user?.email} - ${user?.name}`);
+    } catch (error: any) {
+      crashlytics().recordError(error);
     }
   }, []);
 
@@ -96,7 +169,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    getUser().catch(() => {});
+    getUser().catch(crashlytics().recordError);
   }, []);
 
   const value = React.useMemo(
