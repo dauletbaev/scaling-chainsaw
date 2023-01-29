@@ -6,8 +6,8 @@ import {
   DrawerContentScrollView,
   DrawerItemList,
 } from '@react-navigation/drawer';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { ColorSchemeName, StyleProp, View, ViewStyle } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { ColorSchemeName, type StyleProp, View, ViewStyle } from 'react-native';
 
 import { RootDrawerParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import Colors from '../constants/Colors';
@@ -124,11 +124,11 @@ function RootNavigator() {
   );
 }
 
-function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
+function Navigation(_: { colorScheme: ColorSchemeName }) {
   return (
     <NavigationContainer
       linking={LinkingConfiguration}
-      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+      // theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
     >
       <RootNavigator />
     </NavigationContainer>
