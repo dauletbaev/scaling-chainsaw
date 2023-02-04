@@ -5,33 +5,18 @@ import { Pressable, StyleSheet } from 'react-native';
 import DrawerTopAvatar from './Avatar';
 import { Text } from '../Themed';
 import { useAuth } from '../../store/authContext';
-import { getRandomSeed } from '../../lib/seed';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const generatedSeed = getRandomSeed();
-let avatarUrl =
-  'https://api.dicebear.com/5.x/adventurer-neutral/png?scale=80&radius=50&size=256';
+import { useUi } from '../../store/uiContext';
 
 function DrawerTop() {
-  const { user } = useAuth();
+  const { avatarUrl } = useUi();
+  const { user, isLoggedIn } = useAuth();
   const navigation = useNavigation();
 
   function onPress() {
-    navigation.navigate('Profile', { userId: user?.id });
+    if (isLoggedIn && user !== null) {
+      navigation.navigate('Profile', { userId: user.id });
+    }
   }
-
-  React.useEffect(() => {
-    AsyncStorage.getItem('seed')
-      .then(seed => {
-        if (seed != null) {
-          avatarUrl += '&seed=' + seed;
-        } else {
-          AsyncStorage.setItem('seed', generatedSeed).catch(() => {});
-          avatarUrl += '&seed=' + generatedSeed;
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   return (
     <Pressable

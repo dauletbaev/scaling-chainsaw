@@ -1,5 +1,4 @@
-import fiveLetterWords from '../constants/fiveLetterWords.json';
-
+const words: string[] = [];
 const MAX_CHALLENGES = 6;
 
 export const getInitialBoard = (): string[][] => {
@@ -20,9 +19,9 @@ export const getCapitalizedLetter = (letter: string) => {
 };
 
 export const getRandomWord = (): string => {
-  const len = fiveLetterWords.length;
+  const len = words.length;
   const randomIndex = Math.floor(Math.random() * 100000) % len;
-  return fiveLetterWords[randomIndex].toUpperCase();
+  return words[randomIndex].toUpperCase();
 };
 
 export const getWordleEmoji = (word: string, guessList: string[]): string => {

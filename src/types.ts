@@ -3,40 +3,41 @@
  * Learn more about using TypeScript with React Navigation:
  * https://reactnavigation.org/docs/typescript/
  */
-
+import type { ParamListBase } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { DrawerScreenProps as BaseDrawerScreenProps } from '@react-navigation/drawer';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import type {
-  CompositeScreenProps,
-  NavigatorScreenParams,
-  ParamListBase,
-} from '@react-navigation/native';
-import type { DrawerScreenProps } from '@react-navigation/drawer';
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootDrawerParamList {}
+    interface RootParamList
+      extends HomeStackParamList,
+        HomeTabsParamList,
+        DrawerParamList {}
   }
 }
 
-export interface RootDrawerParamList extends ParamListBase {
-  Home: NavigatorScreenParams<RootTabParamList> | undefined;
-  Profile: {
-    userId: string | undefined;
-  };
+export interface HomeStackParamList extends ParamListBase {
+  DrawerNavigator: undefined;
+  Notifications: undefined;
+}
+
+export interface HomeTabsParamList extends ParamListBase {
+  Game: undefined;
+  Leaderboard: undefined;
+}
+
+export interface DrawerParamList extends ParamListBase {
+  Home: undefined;
+  Profile: { userId: string | undefined };
   Settings: undefined;
 }
 
-export type RootDrawerScreenProps<Screen extends keyof RootDrawerParamList> =
-  DrawerScreenProps<RootDrawerParamList, Screen>;
+export type DrawerScreenProps<Screen extends keyof DrawerParamList> =
+  BaseDrawerScreenProps<DrawerParamList, Screen>;
 
-export interface RootTabParamList extends ParamListBase {
-  Game: undefined;
-  Rating: undefined;
-}
+export type HomeStackScreenProps<Screen extends keyof HomeStackParamList> =
+  NativeStackScreenProps<HomeStackParamList, Screen>;
 
-export type RootTabScreenProps<Screen extends keyof RootTabParamList> =
-  CompositeScreenProps<
-    // @ts-expect-error: this is a bug in react-navigation
-    BottomTabScreenProps<RootTabParamList, Screen>,
-    DrawerScreenProps<RootDrawerParamList>
-  >;
+export type HomeTabsScreenProps<Screen extends keyof HomeTabsParamList> =
+  BottomTabScreenProps<HomeTabsParamList, Screen>;
