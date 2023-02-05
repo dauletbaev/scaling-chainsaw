@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
 import { SafeAreaView, Button, StyleSheet } from 'react-native';
 
 import GuessRow from '../components/Game/GuessRow';
@@ -8,7 +7,7 @@ import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import { getCapitalizedLetter } from '../lib/game';
-import { RootTabScreenProps } from '../types';
+import { HomeTabsScreenProps } from '../types';
 
 const words = [
   'LIGHT',
@@ -33,13 +32,13 @@ const defaultGuess: IGuess = {
   5: '',
 };
 
-function GameScreen(_: RootTabScreenProps<'Game'>) {
+function GameScreen(_: HomeTabsScreenProps<'Game'>) {
   const colorScheme = useColorScheme();
 
-  const [activeWord, setActiveWord] = useState(words[0]);
-  const [guessIndex, setGuessIndex] = useState(0);
-  const [guesses, setGuesses] = useState<IGuess>(defaultGuess);
-  const [gameComplete, setGameComplete] = useState(false);
+  const [activeWord, setActiveWord] = React.useState(words[0]);
+  const [guessIndex, setGuessIndex] = React.useState(0);
+  const [guesses, setGuesses] = React.useState<IGuess>(defaultGuess);
+  const [gameComplete, setGameComplete] = React.useState(false);
 
   const handleKeyPress = (letter: string) => {
     const guess: string = guesses[guessIndex];
@@ -84,7 +83,7 @@ function GameScreen(_: RootTabScreenProps<'Game'>) {
     setGuesses({ ...guesses, [guessIndex]: guess + getCapitalizedLetter(letter) });
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!gameComplete) {
       setActiveWord(words[Math.floor(Math.random() * words.length)]);
       setGuesses(defaultGuess);

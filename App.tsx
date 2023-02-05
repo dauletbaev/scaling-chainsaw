@@ -7,6 +7,7 @@ import useCachedResources from './src/hooks/useCachedResources';
 import useColorScheme from './src/hooks/useColorScheme';
 import Navigation from './src/navigation';
 import { AuthProvider } from './src/store/authContext';
+import { UiProvider } from './src/store/uiContext';
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
@@ -18,9 +19,11 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <Navigation colorScheme={colorScheme} />
-      </AuthProvider>
+      <UiProvider>
+        <AuthProvider>
+          <Navigation colorScheme={colorScheme} />
+        </AuthProvider>
+      </UiProvider>
       <StatusBar />
     </SafeAreaProvider>
   );

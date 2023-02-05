@@ -1,12 +1,13 @@
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
+import * as React from 'react';
+import crashlytics from '@react-native-firebase/crashlytics';
 
 export default function useCachedResources() {
-  const [isLoadingComplete, setLoadingComplete] = useState(false);
+  const [isLoadingComplete, setLoadingComplete] = React.useState(false);
 
   // Load any resources or data that we need prior to rendering the app
-  useEffect(() => {
+  React.useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
         await SplashScreen.preventAutoHideAsync();
@@ -15,18 +16,15 @@ export default function useCachedResources() {
         await Font.loadAsync({
           'space-mono': require('../../assets/fonts/SpaceMono-Regular.ttf'),
         });
-      } catch (e) {
-        // We might want to provide this error information to an error reporting service
-        console.warn(e);
+      } catch (error: any) {
+        crashlytics().recordError(error);
       } finally {
         setLoadingComplete(true);
         await SplashScreen.hideAsync();
       }
     }
 
-    loadResourcesAndDataAsync().catch(() => {
-      console.log('Error loading resources');
-    });
+    loadResourcesAndDataAsync().catch(crashlytics().recordError);
   }, []);
 
   return isLoadingComplete;

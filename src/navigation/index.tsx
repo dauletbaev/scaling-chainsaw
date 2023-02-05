@@ -1,31 +1,36 @@
 import * as React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
+  type DrawerContentComponentProps,
   createDrawerNavigator,
-  DrawerContentComponentProps,
   DrawerContentScrollView,
   DrawerItemList,
 } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import { ColorSchemeName, type StyleProp, View, ViewStyle } from 'react-native';
 
-import { RootDrawerParamList, RootTabParamList, RootTabScreenProps } from '../types';
+import type { DrawerParamList, HomeStackParamList, HomeTabsParamList } from '../types';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import SettingsScreen from '../screens/Settings';
 import GameScreen from '../screens/Game';
-import RatingScreen from '../screens/Rating';
+import NotificationsScreen from '../screens/Notifications';
+import LeaderboardScreen from '../screens/Leaderboard';
 import LinkingConfiguration from './LinkingConfiguration';
 import TabBarIcon from './TabBarIcon';
 import Layout from '../constants/Layout';
 import DrawerTop from '../components/DrawerTop';
 import ProfileScreen from '../screens/Profile';
 import DrawerBottom from '../components/DrawerBottom';
+import IconButton from '../components/UI/IconButton';
+import { useAuth } from '../store/authContext';
 
-const BottomTab = createBottomTabNavigator<RootTabParamList>();
-const Drawer = createDrawerNavigator<RootDrawerParamList>();
+const Stack = createNativeStackNavigator<HomeStackParamList>();
+const BottomTab = createBottomTabNavigator<HomeTabsParamList>();
+const Drawer = createDrawerNavigator<DrawerParamList>();
 
-function BottomTabNavigator() {
+function HomeTabs() {
   const colorScheme = useColorScheme();
 
   return (
@@ -40,15 +45,15 @@ function BottomTabNavigator() {
       <BottomTab.Screen
         name="Game"
         component={GameScreen}
-        options={(_: RootTabScreenProps<'Game'>) => ({
+        options={() => ({
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="game-controller-outline" color={color} />
           ),
         })}
       />
       <BottomTab.Screen
-        name="Rating"
-        component={RatingScreen}
+        name="Leaderboard"
+        component={LeaderboardScreen}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="medal-outline" color={color} />,
         }}
@@ -75,7 +80,8 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
   );
 }
 
-function RootNavigator() {
+function DrawerNavigator() {
+  const { isLoggedIn, user } = useAuth();
   const colorScheme = useColorScheme();
 
   const drawerStyle: StyleProp<ViewStyle> = {
@@ -95,23 +101,35 @@ function RootNavigator() {
         drawerInactiveTintColor: Colors[colorScheme].text,
       }}
       drawerContent={CustomDrawerContent}
+      initialRouteName="Home"
     >
       <Drawer.Screen
         name="Home"
-        component={BottomTabNavigator}
-        options={{
+        component={HomeTabs}
+        options={({ navigation }) => ({
           title: 'Bas bet',
           drawerIcon: ({ color }) => <TabBarIcon name="home-outline" color={color} />,
-        }}
+          headerRight: () => (
+            <IconButton
+              name="notifications-outline"
+              onPress={() => navigation.navigate('Notifications')}
+              color="#000"
+              size={24}
+            />
+          ),
+        })}
       />
-      <Drawer.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          title: 'Profil',
-          drawerIcon: ({ color }) => <TabBarIcon name="person-outline" color={color} />,
-        }}
-      />
+      {isLoggedIn && user !== null && (
+        <Drawer.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            title: 'Profil',
+            drawerIcon: ({ color }) => <TabBarIcon name="person-outline" color={color} />,
+          }}
+          initialParams={{ userId: user.id }}
+        />
+      )}
       <Drawer.Screen
         name="Settings"
         component={SettingsScreen}
@@ -124,13 +142,30 @@ function RootNavigator() {
   );
 }
 
+function HomeStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="DrawerNavigator"
+        component={DrawerNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ presentation: 'modal' }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 function Navigation(_: { colorScheme: ColorSchemeName }) {
   return (
     <NavigationContainer
       linking={LinkingConfiguration}
       // theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
     >
-      <RootNavigator />
+      <HomeStack />
     </NavigationContainer>
   );
 }
