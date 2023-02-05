@@ -17,6 +17,7 @@ interface IAuthContext {
   user: User['user'] | null;
   idToken: string | null;
   isLoggedIn: boolean;
+  invalidateUser: (user: Partial<IAuthContext['user']>) => void;
   setIdToken: (idToken: string | null) => void;
   setUser: (user: IAuthContext['user']) => void;
   signIn: () => Promise<FirebaseAuthTypes.UserCredential | undefined>;
@@ -155,6 +156,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  const invalidateUser = React.useCallback(
+    async (user: Partial<IAuthContext['user']>) => {
+      try {
+        const currentUser = await AsyncStorage.getItem('user');
+        if (currentUser != null) {
+          const parsedUser = JSON.parse(currentUser);
+          const updatedUser = {
+            ...parsedUser,
+            ...user,
+          };
+          setUser(updatedUser);
+          await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      } catch (error: any) {
+        crashlytics().recordError(error);
+      }
+    },
+    [],
+  );
+
   React.useEffect(() => {
     const getUser = async () => {
       const user = await AsyncStorage.getItem('user');
@@ -179,6 +200,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       idToken,
       setIdToken,
       isLoggedIn: typeof idToken === 'string',
+      invalidateUser,
       signIn,
       signOut,
     }),

@@ -1,26 +1,32 @@
 import * as React from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { Image, StyleSheet, TextInput, Pressable } from 'react-native';
+import { Alert, Image, StyleSheet, TextInput, Pressable } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import { Ionicons } from '@expo/vector-icons';
 import crashlytics from '@react-native-firebase/crashlytics';
 import firestore from '@react-native-firebase/firestore';
 
+import type { DrawerScreenProps } from '../types';
 import { Text, View } from '../components/Themed';
-import { DrawerScreenProps } from '../types';
 import useProfileImage from '../hooks/useProfileImage';
 import { useUi } from '../store/uiContext';
-import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
+import { PROFILE_PLACEHOLDER } from '../constants/Layout';
+import { useAuth } from '../store/authContext';
+import Button from '../components/UI/Button';
 
 function ProfileScreen(props: DrawerScreenProps<'Profile'>) {
   const { userId } = props.route.params ?? { userId: undefined };
   const { avatarUrl, setAvatarUrl } = useUi();
+  const { user, invalidateUser } = useAuth();
   const { deleteImage, imageUploadingProgress, uploadImage } = useProfileImage();
 
-  const bottomSheetModalRef = React.useRef<BottomSheetModal>(null);
+  const bottomSheetRef = React.useRef<BottomSheet>(null);
+  const [saving, setSaving] = React.useState(false);
   const [name, setName] = React.useState('Miyman');
   const [totalScore, setTotalScore] = React.useState(0);
   const [monthlyScore, setMonthlyScore] = React.useState(0);
-  const [disabled] = React.useState(false);
+  const [disabled, setDisabled] = React.useState(false);
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -38,6 +44,7 @@ function ProfileScreen(props: DrawerScreenProps<'Profile'>) {
     const uri = result.assets[0].uri;
     // to show instantly the new image
     setAvatarUrl(uri);
+    bottomSheetRef.current?.close();
     // not raises an error if the file does not exist
     await deleteImage(userId);
 
@@ -48,15 +55,39 @@ function ProfileScreen(props: DrawerScreenProps<'Profile'>) {
     }
   };
 
-  // const handlePresentModalPress = React.useCallback(() => {
-  //   bottomSheetModalRef.current?.present();
-  // }, []);
+  const deleteAvatar = () => {
+    if (userId === undefined) return;
+    setSaving(true);
+    void deleteImage(userId)
+      .then(() => {
+        setAvatarUrl(PROFILE_PLACEHOLDER);
+      })
+      .catch(crashlytics().recordError)
+      .finally(() => {
+        setSaving(false);
+        bottomSheetRef.current?.close();
+      });
+  };
+
+  const saveChanges = () => {
+    if (userId === undefined || disabled || saving) return;
+    setSaving(true);
+    void firestore()
+      .collection('users')
+      .doc(userId)
+      .update({ name })
+      .then(() => {
+        invalidateUser({ name });
+        Alert.alert('Success', 'Profile updated successfully');
+      })
+      .catch(crashlytics().recordError)
+      .finally(() => {
+        setSaving(false);
+      });
+  };
 
   React.useEffect(() => {
-    if (userId === undefined) {
-      return;
-    }
-
+    if (userId === undefined) return;
     void firestore()
       .collection('users')
       .doc(userId)
@@ -73,69 +104,102 @@ function ProfileScreen(props: DrawerScreenProps<'Profile'>) {
       .catch(crashlytics().recordError);
   }, [userId]);
 
+  React.useEffect(() => {
+    if (user === null) return;
+    setDisabled(user.name === name);
+  }, [user, name]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        bottomSheetRef.current?.close();
+        if (user === null) return;
+        setName(user.name ?? '');
+      };
+    }, [user]),
+  );
+
+  const renderBackdrop = React.useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        pressBehavior="close"
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+      />
+    ),
+    [],
+  );
+
   return (
-    <BottomSheetModalProvider>
-      <View style={styles.container}>
-        <View style={styles.containerItem}>
+    <View style={styles.container}>
+      <View style={styles.containerItem}>
+        <Pressable
+          onPress={() => {
+            bottomSheetRef.current?.expand();
+          }}
+        >
+          <Image
+            style={[styles.avatar, imageUploadingProgress > 0 && styles.avatarUploading]}
+            source={{ uri: avatarUrl }}
+          />
+        </Pressable>
+        <Text style={styles.title}>{user?.name}</Text>
+        <Text style={styles.info}>Usi aydagi ball: {monthlyScore}</Text>
+        <Text style={styles.info}>Uliwma ball: {totalScore}</Text>
+      </View>
+
+      <View style={styles.containerItem}>
+        <View style={styles.formControl}>
+          <Text style={styles.label}>Name:</Text>
+          <TextInput style={styles.input} value={name} onChangeText={setName} />
+        </View>
+
+        <Button
+          onPress={saveChanges}
+          disabled={disabled}
+          title="Save"
+          mode="outlined"
+          loading={saving}
+        />
+      </View>
+
+      <BottomSheet
+        ref={bottomSheetRef}
+        style={styles.bottomSheet}
+        index={-1}
+        snapPoints={['25%']}
+        backdropComponent={renderBackdrop}
+      >
+        <View>
           <Pressable
+            style={styles.bottomSheetButton}
             onPress={() => {
-              bottomSheetModalRef.current?.present();
+              pickImage().catch(crashlytics().recordError);
             }}
           >
-            <Image
-              style={[
-                styles.avatar,
-                imageUploadingProgress > 0 && styles.avatarUploading,
-              ]}
-              source={{ uri: avatarUrl }}
+            <Ionicons
+              style={styles.bottomSheetButtonIcon}
+              name="images-outline"
+              size={24}
+              color="black"
             />
+            <Text>Gallereya</Text>
           </Pressable>
-          {imageUploadingProgress > 0 && (
-            <Text style={styles.info}>
-              Juklenbekte kutin {imageUploadingProgress}%...
-            </Text>
-          )}
-          <Text style={styles.title}>{name}</Text>
-          <Text style={styles.info}>Usi aydagi ball: {monthlyScore}</Text>
-          <Text style={styles.info}>Uliwma ball: {totalScore}</Text>
-        </View>
-
-        <View style={styles.containerItem}>
-          <View style={styles.formControl}>
-            <Text style={styles.label}>Name:</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} />
-          </View>
-
-          <Pressable
-            style={() => [styles.button, disabled && styles.buttonDisabled]}
-            android_ripple={{ color: 'white' }}
-            disabled={disabled}
-          >
-            <Text style={styles.buttonText}>Save</Text>
-          </Pressable>
-        </View>
-
-        <BottomSheetModal ref={bottomSheetModalRef} snapPoints={['25%']}>
-          <View style={styles.bottomSheet}>
+          {avatarUrl !== PROFILE_PLACEHOLDER && (
             <Pressable
               style={styles.bottomSheetButton}
               onPress={() => {
-                pickImage().catch(crashlytics().recordError);
-              }}
-            >
-              <Ionicons
-                style={styles.bottomSheetButtonIcon}
-                name="images-outline"
-                size={24}
-                color="black"
-              />
-              <Text>Gallereya</Text>
-            </Pressable>
-            <Pressable
-              style={styles.bottomSheetButton}
-              onPress={() => {
-                if (userId === undefined) return;
-                deleteImage(userId).catch(crashlytics().recordError);
+                Alert.alert('Oshiriw', 'Oshiriw?', [
+                  {
+                    text: 'Yaq',
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'Oshiriw',
+                    onPress: deleteAvatar,
+                  },
+                ]);
               }}
             >
               <Ionicons
@@ -146,10 +210,10 @@ function ProfileScreen(props: DrawerScreenProps<'Profile'>) {
               />
               <Text>Oshiriw</Text>
             </Pressable>
-          </View>
-        </BottomSheetModal>
-      </View>
-    </BottomSheetModalProvider>
+          )}
+        </View>
+      </BottomSheet>
+    </View>
   );
 }
 
@@ -193,25 +257,16 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
   },
-  button: {
-    marginTop: 20,
-    width: '50%',
-    backgroundColor: 'blue',
-    padding: 10,
-    borderRadius: 5,
-  },
-  buttonDisabled: {
-    backgroundColor: 'grey',
-  },
-  buttonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontSize: 18,
-  },
 
   bottomSheet: {
-    flex: 1,
-    backgroundColor: '#ddd',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
+    elevation: 10,
   },
   bottomSheetButton: {
     flexDirection: 'row',
