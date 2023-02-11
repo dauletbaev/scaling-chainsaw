@@ -6,6 +6,7 @@ import firestore from '@react-native-firebase/firestore';
 import RatingList from '../components/Rating/RatingList';
 import { Text } from '../components/Themed';
 import type { HomeTabsScreenProps } from '../types';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface LeaderBoardUser {
   id: string;
@@ -17,27 +18,29 @@ interface LeaderBoardUser {
 function LeaderboardScreen(_: HomeTabsScreenProps<'Leaderboard'>) {
   const [users, setUsers] = React.useState<LeaderBoardUser[]>([]);
 
-  React.useEffect(() => {
-    const unsubscribe = firestore()
-      .collection('users')
-      .orderBy('total_score', 'desc')
-      .limit(10)
-      .onSnapshot(querySnapshot => {
-        const users = querySnapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            imageUri: data.avatar,
-            name: data.name,
-            points: data.total_score,
-          };
-        }, crashlytics().recordError);
+  useFocusEffect(
+    React.useCallback(() => {
+      const unsubscribe = firestore()
+        .collection('users')
+        .orderBy('total_score', 'desc')
+        .limit(10)
+        .onSnapshot(querySnapshot => {
+          const users = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              imageUri: data.avatar,
+              name: data.name,
+              points: data.total_score,
+            };
+          }, crashlytics().recordError);
 
-        setUsers(users);
-      });
+          setUsers(users);
+        });
 
-    return unsubscribe;
-  }, []);
+      return unsubscribe;
+    }, []),
+  );
 
   return (
     <ScrollView style={styles.container}>
