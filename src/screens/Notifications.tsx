@@ -1,11 +1,19 @@
 import * as React from 'react';
 import { StyleSheet } from 'react-native';
+import analytics from '@react-native-firebase/analytics';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
-import { RootDrawerScreenProps } from '../types';
+import { HomeStackScreenProps } from '../types';
 
-function NotifcationsScreen(props: RootDrawerScreenProps<'Settings'>) {
+function NotifcationsScreen(_: HomeStackScreenProps<'Notifciations'>) {
+  React.useEffect(() => {
+    void analytics().logScreenView({
+      screen_name: 'Notifciations',
+      screen_class: 'Notifciations',
+    });
+  }, []);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Notifciations</Text>

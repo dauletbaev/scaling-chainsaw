@@ -11,20 +11,23 @@ import { NavigationContainer } from '@react-navigation/native';
 import { ColorSchemeName, type StyleProp, View, ViewStyle } from 'react-native';
 
 import type { DrawerParamList, HomeStackParamList, HomeTabsParamList } from '../types';
-import Colors from '../constants/Colors';
+
 import useColorScheme from '../hooks/useColorScheme';
-import SettingsScreen from '../screens/Settings';
-import GameScreen from '../screens/Game';
-import NotificationsScreen from '../screens/Notifications';
-import LeaderboardScreen from '../screens/Leaderboard';
+import { useAuth } from '../store/authContext';
+import Colors from '../constants/Colors';
 import LinkingConfiguration from './LinkingConfiguration';
 import TabBarIcon from './TabBarIcon';
 import Layout from '../constants/Layout';
 import DrawerTop from '../components/DrawerTop';
-import ProfileScreen from '../screens/Profile';
 import DrawerBottom from '../components/DrawerBottom';
 import IconButton from '../components/UI/IconButton';
-import { useAuth } from '../store/authContext';
+
+// Screens
+import AboutScreen from '../screens/About';
+import GameScreen from '../screens/Game';
+import LeaderboardScreen from '../screens/Leaderboard';
+import NotificationsScreen from '../screens/Notifications';
+import ProfileScreen from '../screens/Profile';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 const BottomTab = createBottomTabNavigator<HomeTabsParamList>();
@@ -130,12 +133,22 @@ function DrawerNavigator() {
           initialParams={{ userId: user.id }}
         />
       )}
-      <Drawer.Screen
+      {/* <Drawer.Screen
         name="Settings"
         component={SettingsScreen}
         options={{
           title: 'Sazlamalar',
           drawerIcon: ({ color }) => <TabBarIcon name="settings-outline" color={color} />,
+        }}
+      /> */}
+      <Drawer.Screen
+        name="About"
+        component={AboutScreen}
+        options={{
+          title: 'Haqqinda',
+          drawerIcon: ({ color }) => (
+            <TabBarIcon name="information-circle-outline" color={color} />
+          ),
         }}
       />
     </Drawer.Navigator>
@@ -151,7 +164,7 @@ function HomeStack() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Notifications"
+        name="Notifciations"
         component={NotificationsScreen}
         options={{ presentation: 'modal' }}
       />

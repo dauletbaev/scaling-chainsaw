@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { SafeAreaView, Button, StyleSheet } from 'react-native';
+import analytics from '@react-native-firebase/analytics';
 
 import GuessRow from '../components/Game/GuessRow';
 import Keyboard from '../components/Game/Keyboard';
@@ -39,6 +40,13 @@ function GameScreen(_: HomeTabsScreenProps<'Game'>) {
   const [guessIndex, setGuessIndex] = React.useState(0);
   const [guesses, setGuesses] = React.useState<IGuess>(defaultGuess);
   const [gameComplete, setGameComplete] = React.useState(false);
+
+  React.useEffect(() => {
+    void analytics().logScreenView({
+      screen_name: 'Game',
+      screen_class: 'Game',
+    });
+  }, []);
 
   const handleKeyPress = (letter: string) => {
     const guess: string = guesses[guessIndex];
