@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import analytics from '@react-native-firebase/analytics';
 import crashlytics from '@react-native-firebase/crashlytics';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
@@ -19,6 +20,8 @@ export default function useProfileImage() {
 
     try {
       await imageRef.delete();
+
+      void analytics().logEvent('delete_profile_image');
     } catch (error: any) {
       crashlytics().recordError(error);
     }
@@ -52,6 +55,8 @@ export default function useProfileImage() {
         setImageUploadingProgress(0);
 
         await firestore().collection('users').doc(userId).update({ avatar: downloadUrl });
+
+        void analytics().logEvent('upload_profile_image');
 
         return downloadUrl;
       } catch (error: any) {

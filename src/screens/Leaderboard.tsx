@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
+import analytics from '@react-native-firebase/analytics';
 import crashlytics from '@react-native-firebase/crashlytics';
 import firestore from '@react-native-firebase/firestore';
 
@@ -17,6 +18,13 @@ interface LeaderBoardUser {
 
 function LeaderboardScreen(_: HomeTabsScreenProps<'Leaderboard'>) {
   const [users, setUsers] = React.useState<LeaderBoardUser[]>([]);
+
+  React.useEffect(() => {
+    void analytics().logScreenView({
+      screen_name: 'Leaderboard',
+      screen_class: 'Leaderboard',
+    });
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {

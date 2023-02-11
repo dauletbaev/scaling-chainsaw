@@ -6,6 +6,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth, { type FirebaseAuthTypes } from '@react-native-firebase/auth';
+import analytics from '@react-native-firebase/analytics';
 import firestore from '@react-native-firebase/firestore';
 import crashlytics from '@react-native-firebase/crashlytics';
 
@@ -62,21 +63,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             updated_at: firestore.FieldValue.serverTimestamp(),
           })
           .then(() => {
-            crashlytics().log(
-              `Sign in back: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`,
-            );
-            crashlytics().log(
-              `User updated: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`,
-            );
+            void analytics().logLogin({
+              method: 'Google',
+            });
           })
-          .catch(error => {
-            crashlytics().recordError(
-              new Error(
-                `Error on sign in back: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`,
-              ),
-            );
-            crashlytics().recordError(error);
-          });
+          .catch(crashlytics().recordError);
       } else {
         void document.ref
           .set(
@@ -88,7 +79,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               email: userInfo.user.email,
               total_score: 0,
               monthly_score: 0,
-              fcm_tokens: firestore.FieldValue.arrayUnion('ABCDE123456'),
               last_login: firestore.FieldValue.serverTimestamp(),
               created_at: firestore.FieldValue.serverTimestamp(),
               updated_at: firestore.FieldValue.serverTimestamp(),
@@ -98,9 +88,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             },
           )
           .then(() => {
-            crashlytics().log(
-              `User added: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`,
-            );
+            void analytics().logSignUp({
+              method: 'Google',
+            });
             void Promise.all([
               crashlytics().setUserId(userInfo.user.id),
               crashlytics().setAttributes({
@@ -109,16 +99,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               }),
             ]);
           })
-          .catch(error => {
-            crashlytics().recordError(error);
-          });
+          .catch(crashlytics().recordError);
       }
 
       let logMsg = `User signed in: ${userInfo.user.id} - ${userInfo.user.email} - ${userInfo.user.name}`;
       if (document.exists) {
         logMsg += ' - Returning user';
       }
-      crashlytics().log(logMsg);
+
+      void analytics().logEvent('login', {
+        method: 'Google',
+        message: logMsg,
+      });
 
       const googleCredential = auth.GoogleAuthProvider.credential(userInfo.idToken);
       return await auth().signInWithCredential(googleCredential);
@@ -150,7 +142,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await AsyncStorage.removeItem('idToken');
       await auth().signOut();
 
-      crashlytics().log(`User signed out: ${user?.id} - ${user?.email} - ${user?.name}`);
+      void analytics().logEvent('logout', {
+        method: 'Google',
+        message: 'User signed out',
+      });
     } catch (error: any) {
       crashlytics().recordError(error);
     }

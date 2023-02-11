@@ -4,6 +4,7 @@ import { Alert, Image, StyleSheet, TextInput, Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
+import analytics from '@react-native-firebase/analytics';
 import crashlytics from '@react-native-firebase/crashlytics';
 import firestore from '@react-native-firebase/firestore';
 
@@ -27,6 +28,13 @@ function ProfileScreen(props: DrawerScreenProps<'Profile'>) {
   const [totalScore, setTotalScore] = React.useState(0);
   const [monthlyScore, setMonthlyScore] = React.useState(0);
   const [disabled, setDisabled] = React.useState(false);
+
+  React.useEffect(() => {
+    void analytics().logScreenView({
+      screen_name: 'Profile',
+      screen_class: 'Profile',
+    });
+  }, []);
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library

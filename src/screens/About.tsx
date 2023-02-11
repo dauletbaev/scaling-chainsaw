@@ -6,28 +6,28 @@ import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { DrawerScreenProps } from '../types';
 
-function SettingsScreen(_: DrawerScreenProps<'Settings'>) {
+function AboutScreen(_: DrawerScreenProps<'About'>) {
   React.useEffect(() => {
     void analytics().logScreenView({
-      screen_name: 'Settings',
-      screen_class: 'Settings',
+      screen_name: 'About',
+      screen_class: 'About',
     });
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
+      <Text style={styles.title}>About</Text>
       <View
         style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <EditScreenInfo path="~/screens/Settings.tsx" />
+      <EditScreenInfo path="~/screens/About.tsx" />
     </View>
   );
 }
 
-export default SettingsScreen;
+export default AboutScreen;
 
 const styles = StyleSheet.create({
   container: {

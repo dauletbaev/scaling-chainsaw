@@ -31,6 +31,7 @@ export interface DrawerParamList extends ParamListBase {
   Home: undefined;
   Profile: { userId: string | undefined };
   Settings: undefined;
+  About: undefined;
 }
 
 export type DrawerScreenProps<Screen extends keyof DrawerParamList> =
