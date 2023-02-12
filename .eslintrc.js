@@ -5,6 +5,7 @@ module.exports = {
   },
   extends: [
     'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
     'standard-with-typescript',
     'plugin:prettier/recommended',
   ],
@@ -34,8 +35,10 @@ module.exports = {
   plugins: ['react', '@typescript-eslint', 'prettier'],
   rules: {
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
-    '@typescript-eslint/explicit-function-return-type': 'off',
     'react/no-unescaped-entities': 'off',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'error',
+    '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-unused-vars': [1, { argsIgnorePattern: '^_' }],
     '@typescript-eslint/restrict-template-expressions': 'off',
   },
