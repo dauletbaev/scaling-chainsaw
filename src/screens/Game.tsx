@@ -11,7 +11,8 @@ import Keyboard from '../components/Game/Keyboard';
 import useColorScheme from '../hooks/useColorScheme';
 import Colors from '../constants/Colors';
 import { getCapitalizedLetter, getRandomWord, WORD_OF_THE_DAY } from '../lib/game';
-import { COLORS } from '../constants/Game';
+import { COLORS, MAX_CHALLENGES } from '../constants/Game';
+import useUpdateScore from '../hooks/useUpdateScore';
 
 type IGuess = Record<number, string>;
 
@@ -26,7 +27,9 @@ const defaultGuess: IGuess = {
 
 function GameScreen(_: HomeTabsScreenProps<'Game'>) {
   const colorScheme = useColorScheme();
+  const updateScore = useUpdateScore();
 
+  const [score, setScore] = React.useState(0);
   const [activeWord, setActiveWord] = React.useState(WORD_OF_THE_DAY);
   const [guessIndex, setGuessIndex] = React.useState(0);
   const [guesses, setGuesses] = React.useState<IGuess>(defaultGuess);
@@ -55,7 +58,9 @@ function GameScreen(_: HomeTabsScreenProps<'Game'>) {
         // }
 
         if (guess === activeWord) {
-          setGuessIndex(guessIndex + 1);
+          const tryNo = guessIndex + 1;
+          setScore((MAX_CHALLENGES + 1) * 20 - tryNo * 20);
+          setGuessIndex(tryNo);
           setGameComplete(true);
           alert('You win!');
           return;
@@ -89,6 +94,7 @@ function GameScreen(_: HomeTabsScreenProps<'Game'>) {
     setActiveWord(getRandomWord());
     setGuesses(defaultGuess);
     setGuessIndex(0);
+    setScore(0);
     setGameComplete(false);
   }, []);
 
@@ -114,6 +120,16 @@ function GameScreen(_: HomeTabsScreenProps<'Game'>) {
 
     return letters;
   }, [guessIndex, guesses, activeWord, colorScheme]);
+
+  React.useEffect(() => {
+    if (gameComplete && score > 0) {
+      void analytics().logEvent('game_complete', {
+        score,
+      });
+
+      updateScore(score);
+    }
+  }, [score, gameComplete, updateScore]);
 
   return (
     <SafeAreaView

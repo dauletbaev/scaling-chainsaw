@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { StyleSheet } from 'react-native';
+
 import { COLORS } from '../../constants/Game';
 import Layout from '../../constants/Layout';
 
@@ -19,10 +20,13 @@ function Block({ index, guess, word, guessed }: Props) {
   const blockStyles: any[] = [styles.guessSquare];
   const textStyles: any[] = [styles.guessLetter];
 
+  const correctGuess = new Set<string>();
+
   if (letter === wordLetter && guessed) {
     blockStyles.push(styles.guessCorrect);
     textStyles.push(styles.guessedLetter);
-  } else if (word.includes(letter) && guessed) {
+    correctGuess.add(letter);
+  } else if (correctGuess.has(letter) && guessed) {
     blockStyles.push(styles.guessInWord);
     textStyles.push(styles.guessedLetter);
   } else if (guessed) {
