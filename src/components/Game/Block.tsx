@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { StyleSheet } from 'react-native';
+import { COLORS } from '../../constants/Game';
 import Layout from '../../constants/Layout';
 
 import { Text, View } from '../Themed';
@@ -40,7 +41,7 @@ export default Block;
 
 const styles = StyleSheet.create({
   guessSquare: {
-    borderColor: '#d3d6da',
+    borderColor: COLORS[Layout.colorScheme].guessSquare.background,
     borderWidth: 2,
     width: Math.floor(Layout.window.width / 7.68) - 5,
     height: Math.floor(Layout.window.height / 16.07) - 5,
@@ -51,21 +52,21 @@ const styles = StyleSheet.create({
   guessLetter: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#878a8c',
+    color: COLORS[Layout.colorScheme].guessSquare.letter,
   },
   guessedLetter: {
-    color: '#fff',
+    color: COLORS[Layout.colorScheme].guessedLetter,
   },
   guessCorrect: {
-    backgroundColor: '#6aaa64',
-    borderColor: '#6aaa64',
+    backgroundColor: COLORS[Layout.colorScheme].correctGuess.background,
+    borderColor: COLORS[Layout.colorScheme].correctGuess.border,
   },
   guessInWord: {
-    backgroundColor: '#c9b458',
-    borderColor: '#c9b458',
+    backgroundColor: COLORS[Layout.colorScheme].inGuess.background,
+    borderColor: COLORS[Layout.colorScheme].inGuess.border,
   },
   guessNotInWord: {
-    backgroundColor: '#787c7e',
-    borderColor: '#787c7e',
+    backgroundColor: COLORS[Layout.colorScheme].wrongGuess.background,
+    borderColor: COLORS[Layout.colorScheme].wrongGuess.border,
   },
 });

@@ -2,25 +2,16 @@ import * as React from 'react';
 import { SafeAreaView, Button, StyleSheet } from 'react-native';
 import analytics from '@react-native-firebase/analytics';
 
+import type { HomeTabsScreenProps } from '../types';
+
+import { Text, View } from '../components/Themed';
 import GuessRow from '../components/Game/GuessRow';
 import Keyboard from '../components/Game/Keyboard';
-import { Text, View } from '../components/Themed';
-import Colors from '../constants/Colors';
-import useColorScheme from '../hooks/useColorScheme';
-import { getCapitalizedLetter } from '../lib/game';
-import { HomeTabsScreenProps } from '../types';
 
-const words = [
-  'LIGHT',
-  'TIGHT',
-  'GOING',
-  'WRUNG',
-  'COULD',
-  'PERKY',
-  'MOUNT',
-  'WHACK',
-  'SUGAR',
-];
+import useColorScheme from '../hooks/useColorScheme';
+import Colors from '../constants/Colors';
+import { getCapitalizedLetter, getRandomWord, WORD_OF_THE_DAY } from '../lib/game';
+import { COLORS } from '../constants/Game';
 
 type IGuess = Record<number, string>;
 
@@ -36,7 +27,7 @@ const defaultGuess: IGuess = {
 function GameScreen(_: HomeTabsScreenProps<'Game'>) {
   const colorScheme = useColorScheme();
 
-  const [activeWord, setActiveWord] = React.useState(words[0]);
+  const [activeWord, setActiveWord] = React.useState(WORD_OF_THE_DAY);
   const [guessIndex, setGuessIndex] = React.useState(0);
   const [guesses, setGuesses] = React.useState<IGuess>(defaultGuess);
   const [gameComplete, setGameComplete] = React.useState(false);
@@ -48,56 +39,81 @@ function GameScreen(_: HomeTabsScreenProps<'Game'>) {
     });
   }, []);
 
-  const handleKeyPress = (letter: string) => {
-    const guess: string = guesses[guessIndex];
+  const handleKeyPress = React.useCallback(
+    (letter: string) => {
+      const guess = guesses[guessIndex];
 
-    if (letter === 'ENTER') {
-      if (guess.length !== 5) {
-        alert('Word too short.');
+      if (letter === 'ENTER') {
+        if (guess.length !== 5) {
+          alert('Word too short.');
+          return;
+        }
+
+        // if (!words.includes(guess)) {
+        //   alert('Not a valid word.');
+        //   return;
+        // }
+
+        if (guess === activeWord) {
+          setGuessIndex(guessIndex + 1);
+          setGameComplete(true);
+          alert('You win!');
+          return;
+        }
+
+        if (guessIndex < 5) {
+          setGuessIndex(guessIndex + 1);
+        } else {
+          setGameComplete(true);
+          alert('You lose!');
+          return;
+        }
+      }
+
+      if (letter === 'BACKSPACE') {
+        setGuesses({ ...guesses, [guessIndex]: guess.slice(0, -1) });
         return;
       }
 
-      // if (!words.includes(guess)) {
-      //   alert('Not a valid word.');
-      //   return;
-      // }
-
-      if (guess === activeWord) {
-        setGuessIndex(guessIndex + 1);
-        setGameComplete(true);
-        alert('You win!');
+      // don't add if guess is full
+      if (guess.length >= 5) {
         return;
       }
 
-      if (guessIndex < 5) {
-        setGuessIndex(guessIndex + 1);
-      } else {
-        setGameComplete(true);
-        alert('You lose!');
-        return;
+      setGuesses({ ...guesses, [guessIndex]: guess + getCapitalizedLetter(letter) });
+    },
+    [guesses, guessIndex, activeWord],
+  );
+
+  const resetGameWithRandomWord = React.useCallback(() => {
+    setActiveWord(getRandomWord());
+    setGuesses(defaultGuess);
+    setGuessIndex(0);
+    setGameComplete(false);
+  }, []);
+
+  const excludedLetters = React.useMemo(() => {
+    const letters = new Map<string, string>();
+
+    for (let i = 0; i < guessIndex; i++) {
+      const guess = guesses[i];
+      for (let j = 0; j < guess.length; j++) {
+        const letter = getCapitalizedLetter(activeWord[j]);
+        const guessedLetter = getCapitalizedLetter(guess[j]);
+        const scheme = COLORS[colorScheme];
+
+        if (guessedLetter === letter) {
+          letters.set(guessedLetter, scheme.correctGuess.background);
+        } else if (activeWord.includes(guessedLetter)) {
+          letters.set(guessedLetter, scheme.inGuess.background);
+        } else {
+          letters.set(guessedLetter, scheme.wrongGuess.background);
+        }
       }
     }
 
-    if (letter === 'BACKSPACE') {
-      setGuesses({ ...guesses, [guessIndex]: guess.slice(0, -1) });
-      return;
-    }
-
-    // don't add if guess is full
-    if (guess.length >= 5) {
-      return;
-    }
-
-    setGuesses({ ...guesses, [guessIndex]: guess + getCapitalizedLetter(letter) });
-  };
-
-  React.useEffect(() => {
-    if (!gameComplete) {
-      setActiveWord(words[Math.floor(Math.random() * words.length)]);
-      setGuesses(defaultGuess);
-      setGuessIndex(0);
-    }
-  }, [gameComplete]);
+    return letters;
+  }, [guessIndex, guesses, activeWord, colorScheme]);
 
   return (
     <SafeAreaView
@@ -124,16 +140,11 @@ function GameScreen(_: HomeTabsScreenProps<'Game'>) {
               <Text style={styles.bold}>Correct Word:</Text> {activeWord}
             </Text>
             <View>
-              <Button
-                title="Reset"
-                onPress={() => {
-                  setGameComplete(false);
-                }}
-              />
+              <Button title="Reset" onPress={resetGameWithRandomWord} />
             </View>
           </View>
         )}
-        <Keyboard onKeyPress={handleKeyPress} />
+        <Keyboard excludedLetters={excludedLetters} onKeyPress={handleKeyPress} />
       </View>
     </SafeAreaView>
   );

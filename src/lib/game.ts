@@ -1,7 +1,7 @@
-const words: string[] = [];
-const MAX_CHALLENGES = 6;
+import Words from '../constants/Words';
+import { MAX_CHALLENGES } from '../constants/Game';
 
-export const getInitialBoard = (): string[][] => {
+export const getInitialBoard = () => {
   const board: string[][] = [];
   for (let i = 0; i < 6; i++) {
     board.push(new Array(5).fill(''));
@@ -18,10 +18,21 @@ export const getCapitalizedLetter = (letter: string) => {
   return letter.toUpperCase();
 };
 
-export const getRandomWord = (): string => {
-  const len = words.length;
+export const upperCase = (word: string) => {
+  let output = '';
+
+  word.split('').forEach(letter => {
+    output += getCapitalizedLetter(letter);
+  });
+
+  return output;
+};
+
+export const getRandomWord = () => {
+  const len = Words.length;
   const randomIndex = Math.floor(Math.random() * 100000) % len;
-  return words[randomIndex].toUpperCase();
+
+  return upperCase(Words[randomIndex]);
 };
 
 export const getWordleEmoji = (word: string, guessList: string[]): string => {
@@ -47,3 +58,18 @@ export const getWordleEmoji = (word: string, guessList: string[]): string => {
 
   return output;
 };
+
+export const getWordOfTheDay = () => {
+  const now = new Date();
+  const start = new Date(2023, 0, 0);
+  const diff = now.valueOf() - start.valueOf();
+
+  let day = Math.floor(diff / (1000 * 60 * 60 * 24));
+  while (day > Words.length) {
+    day -= Words.length;
+  }
+
+  return Words[day];
+};
+
+export const WORD_OF_THE_DAY = upperCase(getWordOfTheDay());

@@ -5,32 +5,52 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import Layout from '../../constants/Layout';
 import { getCapitalizedLetter } from '../../lib/game';
 import { Text, View } from '../Themed';
+import { COLORS } from '../../constants/Game';
+import useColorScheme from '../../hooks/useColorScheme';
 
 interface Props {
   letters: string[];
+  excludedLetters: Map<string, string>;
   onKeyPress: (letter: string) => void;
 }
 
-function KeyboardRow({ letters, onKeyPress }: Props) {
+function KeyboardRow({ letters, onKeyPress, excludedLetters }: Props) {
+  const colorScheme = useColorScheme();
+
   return (
     <View style={styles.keyboardRow}>
-      {letters.map(letter => (
-        <TouchableOpacity
-          onPress={() => {
-            onKeyPress(letter);
-          }}
-          key={letter}
-        >
-          <View style={[styles.key, letter.length > 1 && styles.keyWithIcon]}>
-            {letter.length === 1 && (
-              <Text style={styles.keyLetter}>{getCapitalizedLetter(letter)}</Text>
-            )}
+      {letters.map(l => {
+        const letter = getCapitalizedLetter(l);
+        const isDisabled =
+          excludedLetters.get(letter) === COLORS[colorScheme].wrongGuess.background;
 
-            {letter === 'ENTER' && <Ionicons name="return-down-back-outline" size={18} />}
-            {letter === 'BACKSPACE' && <Ionicons name="backspace-outline" size={18} />}
-          </View>
-        </TouchableOpacity>
-      ))}
+        return (
+          <TouchableOpacity
+            key={letter}
+            onPress={() => {
+              onKeyPress(letter);
+            }}
+            disabled={isDisabled}
+          >
+            <View
+              style={[
+                styles.key,
+                letter.length > 1 && styles.keyWithIcon,
+                excludedLetters.has(letter) && {
+                  backgroundColor: excludedLetters.get(letter),
+                },
+              ]}
+            >
+              {letter.length === 1 && <Text style={styles.keyLetter}>{letter}</Text>}
+
+              {letter === 'ENTER' && (
+                <Ionicons name="return-down-back-outline" size={18} />
+              )}
+              {letter === 'BACKSPACE' && <Ionicons name="backspace-outline" size={18} />}
+            </View>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 }
