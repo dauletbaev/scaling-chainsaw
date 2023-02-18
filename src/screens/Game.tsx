@@ -58,9 +58,8 @@ function GameScreen(_: HomeTabsScreenProps<'Game'>) {
         // }
 
         if (guess === activeWord) {
-          const tryNo = guessIndex + 1;
-          setScore((MAX_CHALLENGES + 1) * 20 - tryNo * 20);
-          setGuessIndex(tryNo);
+          setScore(MAX_CHALLENGES * 20 - guessIndex * 20);
+          setGuessIndex(guessIndex + 1);
           setGameComplete(true);
           alert('You win!');
           return;
