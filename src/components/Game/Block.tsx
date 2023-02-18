@@ -26,7 +26,7 @@ function Block({ index, guess, word, guessed }: Props) {
     blockStyles.push(styles.guessCorrect);
     textStyles.push(styles.guessedLetter);
     correctGuess.add(letter);
-  } else if (correctGuess.has(letter) && guessed) {
+  } else if ((correctGuess.has(letter) || word.includes(letter)) && guessed) {
     blockStyles.push(styles.guessInWord);
     textStyles.push(styles.guessedLetter);
   } else if (guessed) {
