@@ -21,8 +21,7 @@ function KeyboardRow({ letters, onKeyPress, excludedLetters }: Props) {
     <View style={styles.keyboardRow}>
       {letters.map(l => {
         const letter = getCapitalizedLetter(l);
-        const isDisabled =
-          excludedLetters.get(letter) === COLORS[colorScheme].wrongGuess.background;
+        const excludedLetterColor = excludedLetters.get(letter);
 
         return (
           <TouchableOpacity
@@ -30,14 +29,14 @@ function KeyboardRow({ letters, onKeyPress, excludedLetters }: Props) {
             onPress={() => {
               onKeyPress(letter);
             }}
-            disabled={isDisabled}
+            disabled={excludedLetterColor === COLORS[colorScheme].wrongGuess.background}
           >
             <View
               style={[
                 styles.key,
                 letter.length > 1 && styles.keyWithIcon,
                 excludedLetters.has(letter) && {
-                  backgroundColor: excludedLetters.get(letter),
+                  backgroundColor: excludedLetterColor,
                 },
               ]}
             >
