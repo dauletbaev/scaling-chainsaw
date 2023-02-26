@@ -1,7 +1,11 @@
 import * as React from 'react';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
 
 import { getRandomSeed } from '../lib/seed';
+import { fetchNotifications } from '../lib/fetchNotifications';
+import { navigationRef } from '../navigation';
 
 const generatedSeed = getRandomSeed();
 let avatarUrlBase =
@@ -10,7 +14,23 @@ let avatarUrlBase =
 interface IUiContext {
   avatarUrl: string;
   setAvatarUrl: (avatarUrl: string) => void;
+  notifications: Notification[];
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
+  notificationBody: NotificationBody;
+  setNotificationBody: (notificationBody: NotificationBody) => void;
+  unreadNotificationCount: number;
+  setUnreadNotificationCount: (count: number) => void;
 }
+
+export interface Notification {
+  id: string;
+  title: string;
+  thumbnail?: string;
+  date: string;
+  isRead: boolean;
+}
+
+export type NotificationBody = Record<Notification['id'], string>;
 
 export const AuthContext = React.createContext<IUiContext | null>(null);
 
@@ -23,10 +43,27 @@ export const useUi = () => {
 };
 
 export const UiProvider = ({ children }: { children: React.ReactNode }) => {
-  const [avatarUrl, setAvatarUrl] =
-    React.useState<IUiContext['avatarUrl']>(avatarUrlBase);
+  const [notifications, setNotifications] = React.useState<Notification[]>([]);
+  const [notificationBody, setNotificationBody] = React.useState<NotificationBody>({});
+  const [unreadNotificationCount, setUnreadNotificationCount] = React.useState(0);
+  const [avatarUrl, setAvatarUrl] = React.useState(avatarUrlBase);
 
   React.useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      const { data } = remoteMessage;
+      if (data !== undefined && data.general === 'true') {
+        await fetchNotifications();
+        navigationRef.current?.navigate('Notifications');
+        setUnreadNotificationCount(prev => prev + 1);
+        return;
+      }
+
+      const { title, body } = remoteMessage.notification ?? {};
+      if (title !== undefined && body !== undefined) {
+        Alert.alert(title, body);
+      }
+    });
+
     AsyncStorage.getItem('avatarUrl')
       .then(storedUrl => {
         if (storedUrl != null) {
@@ -37,18 +74,41 @@ export const UiProvider = ({ children }: { children: React.ReactNode }) => {
         }
       })
       .catch(() => {});
+
+    AsyncStorage.getItem('unreadNotificationCount')
+      .then(storedCount => {
+        if (storedCount != null) {
+          setUnreadNotificationCount(parseInt(storedCount));
+        }
+      })
+      .catch(() => {});
+
+    return unsubscribe;
   }, []);
 
   React.useEffect(() => {
     AsyncStorage.setItem('avatarUrl', avatarUrl).catch(() => {});
   }, [avatarUrl]);
 
+  React.useEffect(() => {
+    AsyncStorage.setItem(
+      'unreadNotificationCount',
+      unreadNotificationCount.toString(),
+    ).catch(() => {});
+  }, [unreadNotificationCount]);
+
   const value = React.useMemo(
     () => ({
       avatarUrl,
       setAvatarUrl,
+      notifications,
+      setNotifications,
+      notificationBody,
+      setNotificationBody,
+      unreadNotificationCount,
+      setUnreadNotificationCount,
     }),
-    [avatarUrl],
+    [avatarUrl, notifications, notificationBody, unreadNotificationCount],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
