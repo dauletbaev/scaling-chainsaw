@@ -7,8 +7,9 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import auth, { type FirebaseAuthTypes } from '@react-native-firebase/auth';
 import analytics from '@react-native-firebase/analytics';
-import firestore from '@react-native-firebase/firestore';
 import crashlytics from '@react-native-firebase/crashlytics';
+import firestore from '@react-native-firebase/firestore';
+import messaging from '@react-native-firebase/messaging';
 
 GoogleSignin.configure({
   webClientId: '825240899035-vic15m9sojebidki6biq2hp062ljnsnd.apps.googleusercontent.com',
@@ -69,6 +70,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           })
           .catch(crashlytics().recordError);
       } else {
+        await messaging().requestPermission();
+        const token = await messaging().getToken();
+
         void document.ref
           .set(
             {
@@ -79,6 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               email: userInfo.user.email,
               total_score: 0,
               monthly_score: 0,
+              fcm_tokens: firestore.FieldValue.arrayUnion(token),
               last_login: firestore.FieldValue.serverTimestamp(),
               created_at: firestore.FieldValue.serverTimestamp(),
               updated_at: firestore.FieldValue.serverTimestamp(),
@@ -172,12 +177,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   React.useEffect(() => {
+    let unsubscribe: () => void;
     const getUser = async () => {
       const user = await AsyncStorage.getItem('user');
       const idToken = await AsyncStorage.getItem('idToken');
 
       if (user != null) {
-        setUser(JSON.parse(user));
+        const parsedUser = JSON.parse(user) as NonNullable<IAuthContext['user']>;
+        setUser(parsedUser);
+        unsubscribe = messaging().onTokenRefresh(async fcmToken => {
+          console.log('FCM token refreshed', fcmToken);
+
+          await firestore()
+            .collection('users')
+            .doc(parsedUser.id)
+            .update({
+              fcm_tokens: firestore.FieldValue.arrayUnion(fcmToken),
+            });
+        });
       }
 
       if (idToken != null) {
@@ -186,6 +203,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     getUser().catch(crashlytics().recordError);
+
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const value = React.useMemo(

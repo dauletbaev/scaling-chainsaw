@@ -7,7 +7,7 @@ import {
   DrawerContentScrollView,
   DrawerItemList,
 } from '@react-navigation/drawer';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { ColorSchemeName, type StyleProp, View, ViewStyle } from 'react-native';
 
 import type { DrawerParamList, HomeStackParamList, HomeTabsParamList } from '../types';
@@ -27,7 +27,9 @@ import AboutScreen from '../screens/About';
 import GameScreen from '../screens/Game';
 import LeaderboardScreen from '../screens/Leaderboard';
 import NotificationsScreen from '../screens/Notifications';
+import NotificationScreen from '../screens/Notification';
 import ProfileScreen from '../screens/Profile';
+import { useUi } from '../store/uiContext';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 const BottomTab = createBottomTabNavigator<HomeTabsParamList>();
@@ -85,6 +87,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 
 function DrawerNavigator() {
   const { isLoggedIn, user } = useAuth();
+  const { unreadNotificationCount } = useUi();
   const colorScheme = useColorScheme();
 
   const drawerStyle: StyleProp<ViewStyle> = {
@@ -118,6 +121,9 @@ function DrawerNavigator() {
               onPress={() => navigation.navigate('Notifications')}
               color="#000"
               size={24}
+              badgeText={
+                unreadNotificationCount > 0 ? unreadNotificationCount : undefined
+              }
             />
           ),
         })}
@@ -164,9 +170,14 @@ function HomeStack() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="Notifciations"
+        name="Notifications"
         component={NotificationsScreen}
         options={{ presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="Notification"
+        component={NotificationScreen}
+        options={{ title: 'Bildirgi' }}
       />
     </Stack.Navigator>
   );
@@ -175,6 +186,7 @@ function HomeStack() {
 function Navigation(_: { colorScheme: ColorSchemeName }) {
   return (
     <NavigationContainer
+      ref={navigationRef}
       linking={LinkingConfiguration}
       // theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
     >
@@ -182,5 +194,7 @@ function Navigation(_: { colorScheme: ColorSchemeName }) {
     </NavigationContainer>
   );
 }
+
+export const navigationRef = React.createRef<NavigationContainerRef<any>>();
 
 export default Navigation;
