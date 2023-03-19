@@ -20,6 +20,13 @@ declare global {
 export interface HomeStackParamList extends ParamListBase {
   DrawerNavigator: undefined;
   Notifications: undefined;
+  Notification: {
+    id: string;
+    title: string;
+    date: string;
+    thumbnail?: string;
+    isUnread?: boolean;
+  };
 }
 
 export interface HomeTabsParamList extends ParamListBase {
