@@ -9,6 +9,11 @@ export async function onCreateTriggerNotification() {
   // await notifee.requestPermission();
 
   const date = new Date(Date.now());
+  // if it's after 9am, set the date to tomorrow
+  if (date.getHours() >= 9) {
+    date.setDate(date.getDate() + 1);
+  }
+  // set the time to 9am
   date.setHours(9, 0, 0, 0);
 
   // Create a time-based trigger
