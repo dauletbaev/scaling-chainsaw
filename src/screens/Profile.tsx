@@ -69,6 +69,10 @@ function ProfileScreen(props: DrawerScreenProps<'Profile'>) {
     void deleteImage(userId)
       .then(() => {
         setAvatarUrl(PROFILE_PLACEHOLDER);
+        void firestore()
+          .collection('users')
+          .doc(userId)
+          .update({ avatar: PROFILE_PLACEHOLDER });
       })
       .catch(crashlytics().recordError)
       .finally(() => {
